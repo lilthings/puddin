@@ -75,14 +75,14 @@ const mapping = ``
 
 func createOnlineRoomIndex() {
 	// // Use the IndexExists service to check if a specified index exists.
-	// exists, err := client.IndexExists("onlineRooms").Do(ctx)
+	// exists, err := client.IndexExists("online_rooms").Do(ctx)
 	// if err != nil {
 	// 	// Handle error
 	// 	panic(err)
 	// }
 	// if !exists {
 	// 	// Create a new index.
-	// 	createIndex, err := client.CreateIndex("onlineRooms").BodyString(mapping).Do(ctx)
+	// 	createIndex, err := client.CreateIndex("online_rooms").BodyString(mapping).Do(ctx)
 	// 	if err != nil {
 	// 		// Handle error
 	// 		panic(err)
