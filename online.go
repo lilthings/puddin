@@ -61,36 +61,43 @@ func watchOnlineRooms(affId string, client *elastic.Client, ctx context.Context)
 				if value.Username == alertRoom {
 					if value.CurrentShow == "public" {
 						if !puddinPublic {
-							discord.ChannelMessageSendEmbed(notificationChannelId, &discordgo.MessageEmbed{
-								URL:   "https://chaturbate.com/" + alertRoom,
-								Title: alertRoom + " is now online!",
-								Color: 0xff008c,
-								// Footer: &discordgo.MessageEmbedFooter{Text: "Made using the discordgo library"},
-								Image: &discordgo.MessageEmbedImage{
-									URL: fmt.Sprintf("https://roomimg.stream.highwebmedia.com/ri/%s.jpg?%d", alertRoom, time.Now().Unix()),
-								},
-								Fields: []*discordgo.MessageEmbedField{
-									{
-										Name:   "Status",
-										Value:  "\u200b" + value.CurrentShow,
-										Inline: true,
+							v, err := getViewerCount(alertRoom)
+							if err != nil || v == 0 {
+								fmt.Println("err getting viewers, maybe pwd: ", v, err)
+							} else {
+								fmt.Println("viewers: ", v)
+								discord.ChannelMessageSendEmbed(notificationChannelId, &discordgo.MessageEmbed{
+									URL:   "https://chaturbate.com/" + alertRoom,
+									Title: alertRoom + " is now online!",
+									Color: 0xff008c,
+									// Footer: &discordgo.MessageEmbedFooter{Text: "Made using the discordgo library"},
+									Image: &discordgo.MessageEmbedImage{
+										URL: fmt.Sprintf("https://roomimg.stream.highwebmedia.com/ri/%s.jpg?%d", alertRoom, time.Now().Unix()),
 									},
-									{
-										Name:   "Viewers",
-										Value:  "\u200b" + fmt.Sprintf("%d", value.NumUsers),
-										Inline: true,
+									Fields: []*discordgo.MessageEmbedField{
+										{
+											Name:   "Status",
+											Value:  "\u200b" + value.CurrentShow,
+											Inline: true,
+										},
+										{
+											Name:   "Viewers",
+											Value:  "\u200b" + fmt.Sprintf("%d", value.NumUsers),
+											Inline: true,
+										},
+										{
+											Name:   "Title",
+											Value:  "\u200b" + stripTitleTags(value.RoomSubject),
+											Inline: false,
+										},
 									},
-									{
-										Name:   "Title",
-										Value:  "\u200b" + stripTitleTags(value.RoomSubject),
-										Inline: false,
-									},
-								},
-							})
-							discord.UpdateStatus(0, "Watchin Puddin :)")
+								})
+								discord.UpdateStatus(0, "Watchin Puddin :)")
+
+								foundPuddin = true
+								puddinPublic = true
+							}
 						}
-						foundPuddin = true
-						puddinPublic = true
 					}
 				}
 

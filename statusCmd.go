@@ -35,6 +35,7 @@ func statusCmd(s *discordgo.Session, m *discordgo.MessageCreate, args []string) 
 
 		if res.StatusCode == http.StatusUnauthorized {
 			fmt.Println("401! " + room)
+			s.ChannelMessageSend(m.ChannelID, "Password required :(")
 			return
 		}
 

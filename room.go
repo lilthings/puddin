@@ -38,11 +38,18 @@ func getViewerCount(room string) (int64, error) {
 		return 0, os.ErrNotExist
 	}
 
+	if res.StatusCode == 401 {
+		fmt.Println("401! " + room)
+		return 0, os.ErrPermission
+	}
+
 	contents, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		return 0, err
 	}
 	res.Body.Close()
+
+	fmt.Println(string(contents))
 
 	split := strings.Split(string(contents), ",")
 	if len(split) > 1 {
