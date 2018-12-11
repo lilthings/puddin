@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/bwmarrin/discordgo"
 	"github.com/olivere/elastic"
 	"io/ioutil"
 	"net/http"
@@ -60,7 +61,32 @@ func watchOnlineRooms(affId string, client *elastic.Client, ctx context.Context)
 				if value.Username == alertRoom {
 					if value.CurrentShow == "public" {
 						if !puddinPublic {
-							discord.ChannelMessageSend(notificationChannelId, alertRoom+" is now online!")
+							discord.ChannelMessageSendEmbed(notificationChannelId, &discordgo.MessageEmbed{
+								URL:   "https://chaturbate.com/" + alertRoom,
+								Title: alertRoom + " is now online!",
+								Color: 0xff008c,
+								// Footer: &discordgo.MessageEmbedFooter{Text: "Made using the discordgo library"},
+								Image: &discordgo.MessageEmbedImage{
+									URL: fmt.Sprintf("https://roomimg.stream.highwebmedia.com/ri/%s.jpg?%d", alertRoom, time.Now().Unix()),
+								},
+								Fields: []*discordgo.MessageEmbedField{
+									{
+										Name:   "Status",
+										Value:  value.RoomStatus,
+										Inline: true,
+									},
+									{
+										Name:   "Viewers",
+										Value:  fmt.Sprintf("%d", value.NumUsers),
+										Inline: true,
+									},
+									{
+										Name:   "Title",
+										Value:  stripTitleTags(value.RoomTitle),
+										Inline: false,
+									},
+								},
+							})
 							discord.UpdateStatus(0, "Watchin Puddin :)")
 						}
 						foundPuddin = true
@@ -87,7 +113,7 @@ func watchOnlineRooms(affId string, client *elastic.Client, ctx context.Context)
 			}
 			if !foundPuddin {
 				if puddinPublic {
-					discord.ChannelMessageSend(notificationChannelId, "watched room is now offline!")
+					discord.ChannelMessageSend(notificationChannelId, alertRoom+" room is now offline :(")
 					discord.UpdateStatus(0, "Waitin for Puddin...")
 				}
 				puddinPublic = false
