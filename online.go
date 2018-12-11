@@ -72,17 +72,17 @@ func watchOnlineRooms(affId string, client *elastic.Client, ctx context.Context)
 								Fields: []*discordgo.MessageEmbedField{
 									{
 										Name:   "Status",
-										Value:  value.RoomStatus,
+										Value:  "\u200b" + value.CurrentShow,
 										Inline: true,
 									},
 									{
 										Name:   "Viewers",
-										Value:  fmt.Sprintf("%d", value.NumUsers),
+										Value:  "\u200b" + fmt.Sprintf("%d", value.NumUsers),
 										Inline: true,
 									},
 									{
 										Name:   "Title",
-										Value:  stripTitleTags(value.RoomTitle),
+										Value:  "\u200b" + stripTitleTags(value.RoomSubject),
 										Inline: false,
 									},
 								},

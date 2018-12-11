@@ -37,7 +37,7 @@ func stripTitleTags(title string) string {
 	var clean []string
 
 	for _, w := range words {
-		if len(w) == 0 || w[0] != '#' {
+		if len(w) > 0 && w[0] != '#' {
 			clean = append(clean, w)
 		}
 	}
