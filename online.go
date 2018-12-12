@@ -94,9 +94,9 @@ func watchOnlineRooms(affId string, client *elastic.Client, ctx context.Context)
 								})
 								discord.UpdateStatus(0, "Watchin Puddin :)")
 
-								foundPuddin = true
 								puddinPublic = true
 							}
+							foundPuddin = true
 						}
 					}
 				}
