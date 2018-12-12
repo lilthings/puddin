@@ -96,8 +96,8 @@ func watchOnlineRooms(affId string, client *elastic.Client, ctx context.Context)
 
 								puddinPublic = true
 							}
-							foundPuddin = true
 						}
+						foundPuddin = true
 					}
 				}
 
