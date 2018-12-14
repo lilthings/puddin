@@ -88,61 +88,43 @@ const mapping = `{
               "type": "date"
             },
             "chat_room_url": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
+              "type": "keyword",
+              "ignore_above": 256
             },
             "chat_room_url_revshare": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
+              "type": "keyword",
+              "ignore_above": 256
             },
             "current_show": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
+              "type": "keyword",
+              "ignore_above": 256
             },
             "display_name": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
+              "type": "keyword",
+              "ignore_above": 256
             },
             "gender": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
+              "type": "keyword",
+              "ignore_above": 256
             },
             "iframe_embed": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
+              "type": "keyword",
+              "ignore_above": 256
             },
             "image_url": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
+              "type": "keyword",
+              "ignore_above": 256
             },
             "image_url_360x270": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
+              "type": "keyword",
+              "ignore_above": 256
             },
             "is_new": {
               "type": "boolean"
             },
             "location": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
+              "type": "keyword",
+              "ignore_above": 256
             },
             "num_followers": {
               "type": "long"
@@ -151,37 +133,27 @@ const mapping = `{
               "type": "long"
             },
             "recorded": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
+              "type": "keyword",
+              "ignore_above": 256
             },
             "room_subject": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
+              "type": "keyword",
+              "ignore_above": 256
             },
             "seconds_online": {
               "type": "long"
             },
             "spoken_languages": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
+              "type": "keyword",
+              "ignore_above": 256
             },
             "tags": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
+              "type": "keyword",
+              "ignore_above": 256
             },
             "username": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256
-              }
+              "type": "keyword",
+              "ignore_above": 256
             }
           }
         },
