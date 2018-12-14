@@ -27,7 +27,7 @@ func main() {
 
 	client := getElasticClient()
 
-	createOnlineRoomIndex()
+	createOnlineRoomIndex(client)
 
 	startDiscord()
 	defer closeDiscord()

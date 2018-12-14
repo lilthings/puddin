@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"github.com/olivere/elastic"
@@ -71,26 +72,145 @@ func getHttpClient() (*http.Client, error) {
 	return httpClient, nil
 }
 
-const mapping = ``
+const mapping = `{
+  "settings": {
+    "number_of_shards": 2
+  },
+  "mappings": {
+    "_doc": {
+      "properties": {
+        "model": {
+          "properties": {
+            "age": {
+              "type": "long"
+            },
+            "birthday": {
+              "type": "date"
+            },
+            "chat_room_url": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            },
+            "chat_room_url_revshare": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            },
+            "current_show": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            },
+            "display_name": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            },
+            "gender": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            },
+            "iframe_embed": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            },
+            "image_url": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            },
+            "image_url_360x270": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            },
+            "is_new": {
+              "type": "boolean"
+            },
+            "location": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            },
+            "num_followers": {
+              "type": "long"
+            },
+            "num_users": {
+              "type": "long"
+            },
+            "recorded": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            },
+            "room_subject": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            },
+            "seconds_online": {
+              "type": "long"
+            },
+            "spoken_languages": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            },
+            "tags": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            },
+            "username": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          }
+        },
+        "time": {
+          "type": "date"
+        }
+      }
+    }
+  }
+}`
 
-func createOnlineRoomIndex() {
-	// // Use the IndexExists service to check if a specified index exists.
-	// exists, err := client.IndexExists("online_rooms").Do(ctx)
-	// if err != nil {
-	// 	// Handle error
-	// 	panic(err)
-	// }
-	// if !exists {
-	// 	// Create a new index.
-	// 	createIndex, err := client.CreateIndex("online_rooms").BodyString(mapping).Do(ctx)
-	// 	if err != nil {
-	// 		// Handle error
-	// 		panic(err)
-	// 	}
-	// 	if !createIndex.Acknowledged {
-	// 		// Not acknowledged
-	// 	}
-	// }
+func createOnlineRoomIndex(client *elastic.Client) {
+	// Use the IndexExists service to check if a specified index exists.
+	exists, err := client.IndexExists("rooms").Do(context.Background())
+	if err != nil {
+		// Handle error
+		panic(err)
+	}
+	if !exists {
+		// Create a new index.
+		createIndex, err := client.CreateIndex("rooms").BodyString(mapping).Do(context.Background())
+		if err != nil {
+			// Handle error
+			panic(err)
+		}
+		if !createIndex.Acknowledged {
+			// Not acknowledged
+		}
+	}
 }
 
 type elasticOM struct {
