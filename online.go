@@ -102,7 +102,7 @@ func watchOnlineRooms(affId string, client *elastic.Client, ctx context.Context)
 				}
 
 				item := elastic.NewBulkIndexRequest().
-					Index("online_rooms").
+					Index("rooms").
 					Type("_doc").
 					Doc(elasticOM{
 						Model: value,
