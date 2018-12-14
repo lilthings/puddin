@@ -144,8 +144,13 @@ func watchOnlineRooms(affId string, client *elastic.Client, ctx context.Context)
 
 type OnlineModel struct {
 	// No longer populated, ignore it
-	// BlockFromCountries json.RawMessage `json:"block_from_countries,omitempty"`
-	// BlockFromStates    json.RawMessage `json:"block_from_states,omitempty"`
+	// BlockFromCountries  json.RawMessage `json:"block_from_countries,omitempty"`
+	// BlockFromStates     json.RawMessage `json:"block_from_states,omitempty"`
+	// ChatRoomUrl         string          `json:"chat_room_url,omitempty"`
+	// ChatRoomUrlRevShare string          `json:"chat_room_url_revshare,omitempty"`
+	// IFrameEmbed         string          `json:"iframe_embed,omitempty"`
+	// IFrameEmbedRevShare string          `json:"iframe_embed_rev_share,omitempty"`
+	// ImageUrl360x270     string          `json:"image_url_360x270,omitempty"`
 	AdsZoneIds            json.RawMessage `json:"ads_zone_ids,omitempty"`
 	Age                   int64           `json:"age,omitempty"`
 	AllowGroupShows       string          `json:"allow_group_shows,omitempty"`
@@ -156,8 +161,6 @@ type OnlineModel struct {
 	BroadcasterOnNewChat  string          `json:"broadcaster_on_new_chat,omitempty"`
 	BroadcasterUsername   string          `json:"broadcaster_username,omitempty"`
 	ChatPassword          string          `json:"chat_password,omitempty"`
-	ChatRoomUrl           string          `json:"chat_room_url,omitempty"`
-	ChatRoomUrlRevShare   string          `json:"chat_room_url_revshare,omitempty"`
 	ChatSettings          json.RawMessage `json:"chat_settings,omitempty"`
 	ChatUsername          string          `json:"chat_username,omitempty"`
 	CurrentShow           string          `json:"current_show,omitempty"`
@@ -172,10 +175,7 @@ type OnlineModel struct {
 	HiddenMessage         string          `json:"hidden_message,omitempty"`
 	HideSatisfactionScore string          `json:"hide_satisfaction_score,omitempty"`
 	HlsSource             string          `json:"hls_source,omitempty"`
-	IFrameEmbed           string          `json:"iframe_embed,omitempty"`
-	IFrameEmbedRevShare   string          `json:"iframe_embed_rev_share,omitempty"`
 	ImageUrl              string          `json:"image_url,omitempty"`
-	ImageUrl360x270       string          `json:"image_url_360x270,omitempty"`
 	IsAgeVerified         bool            `json:"is_age_verified,omitempty"`
 	IsMobile              bool            `json:"is_mobile,omitempty"`
 	IsModerator           bool            `json:"is_moderator,omitempty"`
