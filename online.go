@@ -154,6 +154,7 @@ type OnlineModel struct {
 	// ChatRoomUrlRevShare string          `json:"chat_room_url_revshare,omitempty"`
 	// IFrameEmbed         string          `json:"iframe_embed,omitempty"`
 	// IFrameEmbedRevShare string          `json:"iframe_embed_rev_share,omitempty"`
+	// ImageUrl            string          `json:"image_url,omitempty"`
 	// ImageUrl360x270     string          `json:"image_url_360x270,omitempty"`
 	AdsZoneIds            json.RawMessage `json:"ads_zone_ids,omitempty"`
 	Age                   int64           `json:"age,omitempty"`
@@ -179,7 +180,6 @@ type OnlineModel struct {
 	HiddenMessage         string          `json:"hidden_message,omitempty"`
 	HideSatisfactionScore string          `json:"hide_satisfaction_score,omitempty"`
 	HlsSource             string          `json:"hls_source,omitempty"`
-	ImageUrl              string          `json:"image_url,omitempty"`
 	IsAgeVerified         bool            `json:"is_age_verified,omitempty"`
 	IsMobile              bool            `json:"is_mobile,omitempty"`
 	IsModerator           bool            `json:"is_moderator,omitempty"`
