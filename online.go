@@ -11,6 +11,8 @@ import (
 	"time"
 )
 
+var onlineRoomCount int
+
 func watchOnlineRooms(affId string, client *elastic.Client, ctx context.Context) {
 	var lastInPasswordShow time.Time
 	for {
@@ -38,7 +40,8 @@ func watchOnlineRooms(affId string, client *elastic.Client, ctx context.Context)
 				goto sleep
 			}
 
-			fmt.Printf("%d currently online models being indexed\n", len(onlineModels))
+			onlineRoomCount = len(onlineModels)
+			fmt.Printf("%d currently online rooms being indexed\n", onlineRoomCount)
 
 			foundPuddin := false
 			for _, value := range onlineModels {

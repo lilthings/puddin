@@ -81,6 +81,10 @@ func commandHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 		s.ChannelMessageSend(m.ChannelID, "Ping!")
 	}
 
+	if strings.ToLower(m.Content) == commandPrefix+"roomcount" {
+		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("There are currently %d rooms online", onlineRoomCount))
+	}
+
 	split := strings.Split(m.Content, " ")
 
 	fmt.Println(split)
