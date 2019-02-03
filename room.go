@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -8,9 +9,17 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
+var errRegionBlocked = errors.New("access denied: this room is not available to your region or gender")
+
 func getViewerCount(room string) (reg int64, anon int64, err error) {
+	r, a, e := getViewers(room)
+	return int64(len(r)), a, e
+}
+
+func getViewers(room string) (reg []roomViewer, anon int64, err error) {
 	csrf := RandString(32)
 
 	form := url.Values{}
@@ -30,39 +39,59 @@ func getViewerCount(room string) (reg int64, anon int64, err error) {
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return 0, 0, err
+		return nil, 0, err
 	}
 
 	if res.StatusCode == 404 {
 		fmt.Println("404! " + room)
-		return 0, 0, os.ErrNotExist
+		return nil, 0, os.ErrNotExist
 	}
 
 	if res.StatusCode == 401 {
 		fmt.Println("401! " + room)
-		return 0, 0, os.ErrPermission
+		return nil, 0, os.ErrPermission
 	}
 
 	contents, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		return 0, 0, err
+		return nil, 0, err
 	}
-	res.Body.Close()
+	_ = res.Body.Close()
 
-	fmt.Println(string(contents))
+	if len(contents) == 0 {
+		return nil, 0, errRegionBlocked
+	}
+	// fmt.Println(string(contents))
 
 	split := strings.Split(string(contents), ",")
-	if len(split) > 1 {
-
-	}
-
 	i, err := strconv.ParseInt(split[0], 10, 64)
 	if err != nil {
 		fmt.Println(err)
-		return 0, 0, err
+		return nil, 0, err
 	}
 
-	return int64(len(split)), i, nil
+	var viewers []roomViewer
+	t := time.Now()
+	if len(split) > 1 {
+		viewers = make([]roomViewer, len(split)-1)
+		for _, vString := range split[1:] {
+			nameSplit := strings.SplitN(vString, "|", 2)
+			if len(nameSplit) != 2 {
+				continue
+			}
+			viewers = append(viewers, roomViewer{
+				Time:             t,
+				Room:             room,
+				Username:         nameSplit[0],
+				Color:            nameSplit[1],
+				RoomAnonViewers:  i,
+				RoomRegViewers:   int64(len(split) - 1),
+				RoomTotalViewers: int64(len(split)-1) + i,
+			})
+		}
+	}
+
+	return viewers, i, nil
 }
 
 type ChatVideoContext struct {

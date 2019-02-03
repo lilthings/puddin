@@ -16,126 +16,129 @@ var onlineRoomCount int
 func watchOnlineRooms(affId string, client *elastic.Client, ctx context.Context) {
 	for {
 		bulk := client.Bulk()
-
+		foundPuddin := false
 		t := time.Now()
 
-		url := "https://chaturbate.com/affiliates/api/onlinerooms/?format=json&wm=" + affId
-		response, err := http.Get(url)
+		onlineModels, err := getOnlineRooms(affId)
 		if err != nil {
-			fmt.Printf("%s\n", err)
+			fmt.Println(err)
 			goto sleep
-		} else {
-			contents, err := ioutil.ReadAll(response.Body)
-			if err != nil {
-				fmt.Printf("%s\n", err)
-				goto sleep
-			}
-			response.Body.Close()
-
-			var onlineModels OnlineModels
-			err = json.Unmarshal(contents, &onlineModels)
-			if err != nil {
-				fmt.Printf("%s\n", err)
-				goto sleep
-			}
-
-			onlineRoomCount = len(onlineModels)
-			fmt.Printf("%d currently online rooms being indexed\n", onlineRoomCount)
-
-			foundPuddin := false
-			for _, value := range onlineModels {
-				switch value.CurrentShow {
-				case "private":
-					// NumUsers is stuck at last count when private started
-					value.NumUsers = 0
-				case "away":
-					// NumUsers is stuck at last count when prior private started
-					value.NumUsers = 0
-				case "hidden":
-					// NumUsers is accurate, do nothing
-				case "group":
-					// NumUsers seems accurate, do nothing
-				case "public":
-					// NumUsers is accurate, do nothing
-				default:
-					fmt.Printf("Unknown CurrentShow %s on model %s.\n", value.CurrentShow, value.Username)
-				}
-
-				if value.Username == alertRoom {
-					if value.CurrentShow == "public" {
-						if !puddinPublic {
-							discord.ChannelMessageSendEmbed(notificationChannelId, &discordgo.MessageEmbed{
-								URL:   "https://chaturbate.com/" + alertRoom,
-								Title: alertRoom + " is now online!",
-								Color: 0xff008c,
-								// Footer: &discordgo.MessageEmbedFooter{Text: "Made using the discordgo library"},
-								Image: &discordgo.MessageEmbedImage{
-									URL: fmt.Sprintf("https://roomimg.stream.highwebmedia.com/ri/%s.jpg?%d", alertRoom, time.Now().Unix()),
-								},
-								Fields: []*discordgo.MessageEmbedField{
-									{
-										Name:   "Status",
-										Value:  "\u200b" + value.CurrentShow,
-										Inline: true,
-									},
-									{
-										Name:   "Viewers",
-										Value:  "\u200b" + fmt.Sprintf("%d", value.NumUsers),
-										Inline: true,
-									},
-									{
-										Name:   "Title",
-										Value:  "\u200b" + stripTitleTags(value.RoomSubject),
-										Inline: false,
-									},
-								},
-							})
-							discord.UpdateStatus(0, "Watchin Puddin :)")
-
-							puddinPublic = true
-						}
-						foundPuddin = true
-					}
-				}
-
-				item := elastic.NewBulkIndexRequest().
-					Index("rooms").
-					Type("_doc").
-					Doc(elasticOM{
-						Model: value,
-						Time:  t,
-					})
-				bulk.Add(item)
-
-				if bulk.EstimatedSizeInBytes() > 80*1e6 {
-					_, err := bulk.Do(ctx)
-					if err != nil {
-						fmt.Printf("%s\n", err)
-						goto sleep
-					}
-				}
-			}
-			if !foundPuddin {
-				if puddinPublic {
-					discord.ChannelMessageSend(notificationChannelId, alertRoom+" room is now offline :(")
-					discord.UpdateStatus(0, "Waitin for Puddin...")
-				}
-				puddinPublic = false
-			}
 		}
 
+		onlineRoomCount = len(onlineModels)
+		fmt.Printf("%d currently online rooms being indexed\n", onlineRoomCount)
+
+		for _, value := range onlineModels {
+			switch value.CurrentShow {
+			case "private":
+				// NumUsers is stuck at last count when private started
+				value.NumUsers = 0
+			case "away":
+				// NumUsers is stuck at last count when prior private started
+				value.NumUsers = 0
+			case "hidden":
+				// NumUsers is accurate, do nothing
+			case "group":
+				// NumUsers seems accurate, do nothing
+			case "public":
+				// NumUsers is accurate, do nothing
+			default:
+				fmt.Printf("Unknown CurrentShow %s on model %s.\n", value.CurrentShow, value.Username)
+			}
+
+			if value.Username == alertRoom {
+				if value.CurrentShow == "public" {
+					if !puddinPublic {
+						_, _ = discord.ChannelMessageSendEmbed(notificationChannelId, &discordgo.MessageEmbed{
+							URL:   "https://chaturbate.com/" + alertRoom,
+							Title: alertRoom + " is now online!",
+							Color: 0xff008c,
+							// Footer: &discordgo.MessageEmbedFooter{Text: "Made using the discordgo library"},
+							Image: &discordgo.MessageEmbedImage{
+								URL: fmt.Sprintf("https://roomimg.stream.highwebmedia.com/ri/%s.jpg?%d", alertRoom, time.Now().Unix()),
+							},
+							Fields: []*discordgo.MessageEmbedField{
+								{
+									Name:   "Status",
+									Value:  "\u200b" + value.CurrentShow,
+									Inline: true,
+								},
+								{
+									Name:   "Viewers",
+									Value:  "\u200b" + fmt.Sprintf("%d", value.NumUsers),
+									Inline: true,
+								},
+								{
+									Name:   "Title",
+									Value:  "\u200b" + stripTitleTags(value.RoomSubject),
+									Inline: false,
+								},
+							},
+						})
+						_ = discord.UpdateStatus(0, "Watchin Puddin :)")
+
+						puddinPublic = true
+					}
+					foundPuddin = true
+				}
+			}
+
+			item := elastic.NewBulkIndexRequest().
+				Index("rooms").
+				Type("_doc").
+				Doc(elasticOM{
+					Model: value,
+					Time:  t,
+				})
+			bulk.Add(item)
+
+			if bulk.EstimatedSizeInBytes() > 80*1e6 {
+				_, err := bulk.Do(ctx)
+				if err != nil {
+					fmt.Printf("%s\n", err)
+					goto sleep
+				}
+			}
+		}
+		if !foundPuddin {
+			if puddinPublic {
+				_, _ = discord.ChannelMessageSend(notificationChannelId, alertRoom+" room is now offline :(")
+				_ = discord.UpdateStatus(0, "Waitin for Puddin...")
+			}
+			puddinPublic = false
+		}
+
+	sleep:
 		if bulk.NumberOfActions() > 0 {
 			_, err := bulk.Do(ctx)
 			if err != nil {
 				fmt.Printf("%s\n", err)
-				goto sleep
 			}
 		}
-
-	sleep:
 		u := time.Until(t.Add(time.Minute))
 		fmt.Printf("Sleeping %s until next check\n", u)
 		time.Sleep(u)
+	}
+}
+
+func getOnlineRooms(affId string) (OnlineModels, error) {
+	url := "https://chaturbate.com/affiliates/api/onlinerooms/?format=json&wm=" + affId
+	response, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	} else {
+		contents, err := ioutil.ReadAll(response.Body)
+		if err != nil {
+			return nil, err
+		}
+		_ = response.Body.Close()
+
+		var onlineModels OnlineModels
+		err = json.Unmarshal(contents, &onlineModels)
+		if err != nil {
+			return nil, err
+		}
+		return onlineModels, nil
 	}
 }
 

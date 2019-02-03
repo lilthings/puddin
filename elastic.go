@@ -165,6 +165,42 @@ const mapping = `{
   }
 }`
 
+const viewerMapping = `{
+  "settings": {
+    "number_of_shards": 2
+  },
+  "mappings": {
+    "_doc": {
+      "properties": {
+        "room": {
+          "type": "keyword",
+          "ignore_above": 256
+        },
+        "username": {
+          "type": "keyword",
+          "ignore_above": 256
+        },
+        "color": {
+          "type": "keyword",
+          "ignore_above": 256
+        },
+        "time": {
+          "type": "date"
+        },
+        "room_reg_viewers": {
+          "type": "long"
+        },
+        "room_anon_viewers": {
+          "type": "long"
+        },
+        "room_total_viewers": {
+          "type": "long"
+        }
+      }
+    }
+  }
+}`
+
 func createOnlineRoomIndex(client *elastic.Client) {
 	// Use the IndexExists service to check if a specified index exists.
 	exists, err := client.IndexExists("rooms").Do(context.Background())
@@ -184,8 +220,37 @@ func createOnlineRoomIndex(client *elastic.Client) {
 		}
 	}
 }
+func createViewerIndex(client *elastic.Client) {
+	// Use the IndexExists service to check if a specified index exists.
+	exists, err := client.IndexExists("viewers").Do(context.Background())
+	if err != nil {
+		// Handle error
+		panic(err)
+	}
+	if !exists {
+		// Create a new index.
+		createIndex, err := client.CreateIndex("viewers").BodyString(viewerMapping).Do(context.Background())
+		if err != nil {
+			// Handle error
+			panic(err)
+		}
+		if !createIndex.Acknowledged {
+			// Not acknowledged
+		}
+	}
+}
 
 type elasticOM struct {
 	Time  time.Time   `json:"time"`
 	Model OnlineModel `json:"model"`
+}
+
+type roomViewer struct {
+	Time             time.Time `json:"time"`
+	Username         string    `json:"username"`
+	Room             string    `json:"room"`
+	Color            string    `json:"color"`
+	RoomRegViewers   int64     `json:"room_reg_viewers"`
+	RoomAnonViewers  int64     `json:"room_anon_viewers"`
+	RoomTotalViewers int64     `json:"room_total_viewers"`
 }

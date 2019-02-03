@@ -28,11 +28,13 @@ func main() {
 	client := getElasticClient()
 
 	createOnlineRoomIndex(client)
+	createViewerIndex(client)
 
 	startDiscord()
 	defer closeDiscord()
 
 	go watchOnlineRooms(affId, client, ctx)
+	go logViewers(affId, client, ctx)
 
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGTERM, syscall.SIGINT)
