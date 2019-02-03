@@ -14,7 +14,6 @@ import (
 var onlineRoomCount int
 
 func watchOnlineRooms(affId string, client *elastic.Client, ctx context.Context) {
-	var lastInPasswordShow time.Time
 	for {
 		bulk := client.Bulk()
 
@@ -65,44 +64,35 @@ func watchOnlineRooms(affId string, client *elastic.Client, ctx context.Context)
 				if value.Username == alertRoom {
 					if value.CurrentShow == "public" {
 						if !puddinPublic {
-							reg, _, err := getViewerCount(alertRoom)
-							if err != nil || reg == 0 {
-								lastInPasswordShow = time.Now()
-								fmt.Println("err getting viewers, maybe pwd: ", reg, err)
-							} else {
-								fmt.Println("viewers: ", reg)
-								if time.Since(lastInPasswordShow) > 5*time.Minute && value.NumUsers > 0 {
-									discord.ChannelMessageSendEmbed(notificationChannelId, &discordgo.MessageEmbed{
-										URL:   "https://chaturbate.com/" + alertRoom,
-										Title: alertRoom + " is now online!",
-										Color: 0xff008c,
-										// Footer: &discordgo.MessageEmbedFooter{Text: "Made using the discordgo library"},
-										Image: &discordgo.MessageEmbedImage{
-											URL: fmt.Sprintf("https://roomimg.stream.highwebmedia.com/ri/%s.jpg?%d", alertRoom, time.Now().Unix()),
-										},
-										Fields: []*discordgo.MessageEmbedField{
-											{
-												Name:   "Status",
-												Value:  "\u200b" + value.CurrentShow,
-												Inline: true,
-											},
-											{
-												Name:   "Viewers",
-												Value:  "\u200b" + fmt.Sprintf("%d", value.NumUsers),
-												Inline: true,
-											},
-											{
-												Name:   "Title",
-												Value:  "\u200b" + stripTitleTags(value.RoomSubject),
-												Inline: false,
-											},
-										},
-									})
-									discord.UpdateStatus(0, "Watchin Puddin :)")
+							discord.ChannelMessageSendEmbed(notificationChannelId, &discordgo.MessageEmbed{
+								URL:   "https://chaturbate.com/" + alertRoom,
+								Title: alertRoom + " is now online!",
+								Color: 0xff008c,
+								// Footer: &discordgo.MessageEmbedFooter{Text: "Made using the discordgo library"},
+								Image: &discordgo.MessageEmbedImage{
+									URL: fmt.Sprintf("https://roomimg.stream.highwebmedia.com/ri/%s.jpg?%d", alertRoom, time.Now().Unix()),
+								},
+								Fields: []*discordgo.MessageEmbedField{
+									{
+										Name:   "Status",
+										Value:  "\u200b" + value.CurrentShow,
+										Inline: true,
+									},
+									{
+										Name:   "Viewers",
+										Value:  "\u200b" + fmt.Sprintf("%d", value.NumUsers),
+										Inline: true,
+									},
+									{
+										Name:   "Title",
+										Value:  "\u200b" + stripTitleTags(value.RoomSubject),
+										Inline: false,
+									},
+								},
+							})
+							discord.UpdateStatus(0, "Watchin Puddin :)")
 
-									puddinPublic = true
-								}
-							}
+							puddinPublic = true
 						}
 						foundPuddin = true
 					}
