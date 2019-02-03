@@ -28,7 +28,7 @@ func watchOnlineRooms(affId string, client *elastic.Client, ctx context.Context)
 		onlineRoomCount = len(onlineModels)
 		fmt.Printf("%d currently online rooms being indexed\n", onlineRoomCount)
 
-		for _, value := range onlineModels {
+		for rank, value := range onlineModels {
 			switch value.CurrentShow {
 			case "private":
 				// NumUsers is stuck at last count when private started
@@ -89,6 +89,7 @@ func watchOnlineRooms(affId string, client *elastic.Client, ctx context.Context)
 				Doc(elasticOM{
 					Model: value,
 					Time:  t,
+					Rank:  int64(rank + 1),
 				})
 			bulk.Add(item)
 

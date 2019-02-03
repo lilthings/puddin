@@ -159,6 +159,9 @@ const mapping = `{
         },
         "time": {
           "type": "date"
+        },
+        "rank": {
+          "type": "long"
         }
       }
     }
@@ -242,6 +245,7 @@ func createViewerIndex(client *elastic.Client) {
 
 type elasticOM struct {
 	Time  time.Time   `json:"time"`
+	Rank  int64       `json:"rank"`
 	Model OnlineModel `json:"model"`
 }
 
