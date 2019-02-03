@@ -47,7 +47,7 @@ func statusCmd(s *discordgo.Session, m *discordgo.MessageCreate, args []string) 
 			return
 		}
 
-		viewers, err := getViewerCount(cvc.BroadcasterUsername)
+		regViewers, anonViewers, err := getViewerCount(cvc.BroadcasterUsername)
 		if err != nil {
 			fmt.Println(err)
 			// s.ChannelMessageSend(m.ChannelID, "Error! "+err.Error())
@@ -70,7 +70,17 @@ func statusCmd(s *discordgo.Session, m *discordgo.MessageCreate, args []string) 
 				},
 				{
 					Name:   "Viewers",
-					Value:  fmt.Sprintf("%d", viewers),
+					Value:  fmt.Sprintf("%d", anonViewers+regViewers),
+					Inline: true,
+				},
+				{
+					Name:   "Registered Viewers",
+					Value:  fmt.Sprintf("%d", regViewers),
+					Inline: true,
+				},
+				{
+					Name:   "Anon Viewers",
+					Value:  fmt.Sprintf("%d", anonViewers),
 					Inline: true,
 				},
 				{

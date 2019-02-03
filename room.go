@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-func getViewerCount(room string) (int64, error) {
+func getViewerCount(room string) (reg int64, anon int64, err error) {
 	csrf := RandString(32)
 
 	form := url.Values{}
@@ -30,22 +30,22 @@ func getViewerCount(room string) (int64, error) {
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return 0, err
+		return 0, 0, err
 	}
 
 	if res.StatusCode == 404 {
 		fmt.Println("404! " + room)
-		return 0, os.ErrNotExist
+		return 0, 0, os.ErrNotExist
 	}
 
 	if res.StatusCode == 401 {
 		fmt.Println("401! " + room)
-		return 0, os.ErrPermission
+		return 0, 0, os.ErrPermission
 	}
 
 	contents, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		return 0, err
+		return 0, 0, err
 	}
 	res.Body.Close()
 
@@ -59,11 +59,10 @@ func getViewerCount(room string) (int64, error) {
 	i, err := strconv.ParseInt(split[0], 10, 64)
 	if err != nil {
 		fmt.Println(err)
-		return 0, err
+		return 0, 0, err
 	}
-	viewers := i + int64(len(split)-1)
 
-	return viewers, nil
+	return int64(len(split)), i, nil
 }
 
 type ChatVideoContext struct {

@@ -65,12 +65,12 @@ func watchOnlineRooms(affId string, client *elastic.Client, ctx context.Context)
 				if value.Username == alertRoom {
 					if value.CurrentShow == "public" {
 						if !puddinPublic {
-							v, err := getViewerCount(alertRoom)
-							if err != nil || v == 0 {
+							reg, _, err := getViewerCount(alertRoom)
+							if err != nil || reg == 0 {
 								lastInPasswordShow = time.Now()
-								fmt.Println("err getting viewers, maybe pwd: ", v, err)
+								fmt.Println("err getting viewers, maybe pwd: ", reg, err)
 							} else {
-								fmt.Println("viewers: ", v)
+								fmt.Println("viewers: ", reg)
 								if time.Since(lastInPasswordShow) > 5*time.Minute && value.NumUsers > 0 {
 									discord.ChannelMessageSendEmbed(notificationChannelId, &discordgo.MessageEmbed{
 										URL:   "https://chaturbate.com/" + alertRoom,
