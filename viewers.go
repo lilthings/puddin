@@ -76,7 +76,7 @@ func logViewers(affId string, client *elastic.Client, ctx context.Context) {
 			}
 		}
 
-		u := time.Until(t.Add(20 * time.Minute))
+		u := time.Until(t.Add(10 * time.Minute))
 		fmt.Printf("%d rooms are region blocked\n", regionBlocked)
 		fmt.Printf("Sleeping %s until next viewer check\n", u)
 		time.Sleep(u)
