@@ -141,7 +141,7 @@ func watchOnlineRooms(affId string, client *elastic.Client, ctx context.Context)
 			}
 		}
 		u := time.Until(t.Add(time.Minute))
-		fmt.Printf("Sleeping %s until next check\n", u)
+		fmt.Printf("Sleeping %s until next online room check\n", u)
 		time.Sleep(u)
 	}
 }
