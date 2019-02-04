@@ -162,6 +162,9 @@ const mapping = `{
         },
         "rank": {
           "type": "long"
+        },
+        "gender_rank": {
+          "type": "long"
         }
       }
     }
@@ -244,9 +247,10 @@ func createViewerIndex(client *elastic.Client) {
 }
 
 type elasticOM struct {
-	Time  time.Time   `json:"time"`
-	Rank  int64       `json:"rank"`
-	Model OnlineModel `json:"model"`
+	Time       time.Time   `json:"time"`
+	Rank       int64       `json:"rank"`
+	GenderRank int64       `json:"gender_rank"`
+	Model      OnlineModel `json:"model"`
 }
 
 type roomViewer struct {

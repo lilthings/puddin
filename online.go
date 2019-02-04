@@ -19,6 +19,11 @@ func watchOnlineRooms(affId string, client *elastic.Client, ctx context.Context)
 		foundPuddin := false
 		t := time.Now()
 
+		var fRank int64 = 0
+		var mRank int64 = 0
+		var cRank int64 = 0
+		var sRank int64 = 0
+
 		onlineModels, err := getOnlineRooms(affId)
 		if err != nil {
 			fmt.Println(err)
@@ -44,6 +49,24 @@ func watchOnlineRooms(affId string, client *elastic.Client, ctx context.Context)
 				// NumUsers is accurate, do nothing
 			default:
 				fmt.Printf("Unknown CurrentShow %s on model %s.\n", value.CurrentShow, value.Username)
+			}
+
+			var gRank int64
+			switch value.Gender {
+			case "f":
+				fRank++
+				gRank = fRank
+			case "m":
+				mRank++
+				gRank = mRank
+			case "c":
+				cRank++
+				gRank = cRank
+			case "s":
+				sRank++
+				gRank = sRank
+			default:
+				gRank = -1
 			}
 
 			if value.Username == alertRoom {
@@ -87,9 +110,10 @@ func watchOnlineRooms(affId string, client *elastic.Client, ctx context.Context)
 				Index("rooms").
 				Type("_doc").
 				Doc(elasticOM{
-					Model: value,
-					Time:  t,
-					Rank:  int64(rank + 1),
+					Model:      value,
+					Time:       t,
+					Rank:       int64(rank + 1),
+					GenderRank: gRank,
 				})
 			bulk.Add(item)
 
