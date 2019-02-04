@@ -193,6 +193,9 @@ const viewerMapping = `{
         "time": {
           "type": "date"
         },
+        "batch_time": {
+          "type": "date"
+        },
         "room_reg_viewers": {
           "type": "long"
         },
@@ -255,6 +258,7 @@ type elasticOM struct {
 
 type roomViewer struct {
 	Time             time.Time `json:"time"`
+	BatchTime        time.Time `json:"batch_time"`
 	Username         string    `json:"username"`
 	Room             string    `json:"room"`
 	Color            string    `json:"color"`

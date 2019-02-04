@@ -26,6 +26,7 @@ func logViewers(affId string, client *elastic.Client, ctx context.Context) {
 
 		go func() {
 			for viewer := range viewerChan {
+				viewer.BatchTime = t
 				bulk.Add(elastic.NewBulkIndexRequest().
 					Index("viewers").
 					Type("_doc").
