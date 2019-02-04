@@ -51,6 +51,10 @@ func getViewers(room string) (reg []roomViewer, anon int64, err error) {
 		fmt.Println("401! " + room)
 		return nil, 0, os.ErrPermission
 	}
+	if res.StatusCode == 400 {
+		fmt.Println("400! " + room)
+		return nil, 0, os.ErrInvalid
+	}
 
 	contents, err := ioutil.ReadAll(res.Body)
 	if err != nil {
