@@ -43,6 +43,7 @@ func logViewers(affId string, client *elastic.Client, ctx context.Context) {
 		for worker := 0; worker < 5; worker++ {
 			wg.Add(1)
 			go func() {
+				defer wg.Done()
 				for username := range roomChan {
 					reg, _, err := getViewers(username)
 					if err != nil {
