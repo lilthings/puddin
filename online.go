@@ -54,7 +54,7 @@ func updateSession(room *OnlineModel, rank int64, t time.Time) {
 		s.viewersAvgTotal += room.NumUsers
 		s.viewersAvgCount++
 	}
-	currSessionSet[room.Username] = s
+	currSessionSet[room.Username+`\/`+room.CurrentShow] = s
 }
 
 func finalizeSessions(bulk *elastic.BulkService) {
