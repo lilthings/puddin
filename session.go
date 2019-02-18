@@ -16,6 +16,7 @@ type Session struct {
 	EndFollowers   int64 `json:"end_followers"`
 	MinFollowers   int64 `json:"min_followers"`
 	MaxFollowers   int64 `json:"max_followers"`
+	DeltaFollowers int64 `json:"delta_followers"`
 
 	StartTime   time.Time     `json:"start_time"`
 	EndTime     time.Time     `json:"end_time"`

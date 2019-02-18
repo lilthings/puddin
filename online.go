@@ -70,6 +70,7 @@ func finalizeSessions(bulk *elastic.BulkService) {
 			oldS.DurationNs = dur
 			oldS.DurationStr = dur.String()
 			oldS.AverageViewers = oldS.viewersAvgTotal / oldS.viewersAvgCount
+			oldS.DeltaFollowers = oldS.EndFollowers - oldS.StartFollowers
 
 			item := elastic.NewBulkIndexRequest().
 				Index("room_session").
