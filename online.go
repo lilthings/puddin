@@ -13,6 +13,91 @@ import (
 
 var onlineRoomCount int
 
+var lastSessionSet = make(map[string]*Session, 6000)
+var currSessionSet = make(map[string]*Session, 6000)
+
+func updateSession(room *OnlineModel, rank int64, t time.Time) {
+	s, ok := lastSessionSet[room.Username+`\/`+room.CurrentShow]
+	if !ok {
+		s = &Session{
+			Username:        room.Username,
+			ShowType:        room.CurrentShow,
+			Gender:          room.Gender,
+			Location:        room.Location,
+			Birthday:        room.Birthday,
+			MaxViewers:      room.NumUsers,
+			StartFollowers:  room.NumFollowers,
+			EndFollowers:    room.NumFollowers,
+			MinFollowers:    room.NumFollowers,
+			MaxFollowers:    room.NumFollowers,
+			StartTime:       t,
+			EndTime:         t,
+			StartRank:       rank,
+			EndRank:         rank,
+			MinRank:         rank,
+			MaxRank:         rank,
+			viewersAvgTotal: room.NumUsers,
+			viewersAvgCount: 1,
+		}
+	} else {
+		s.EndFollowers = room.NumFollowers
+		s.EndTime = t
+		s.EndRank = rank
+
+		setMin(&s.MinFollowers, room.NumFollowers)
+		setMin(&s.MinRank, rank)
+
+		setMax(&s.MaxFollowers, room.NumFollowers)
+		setMax(&s.MaxViewers, room.NumUsers)
+		setMax(&s.MaxRank, rank)
+
+		s.viewersAvgTotal += room.NumUsers
+		s.viewersAvgCount++
+	}
+	currSessionSet[room.Username] = s
+}
+
+func finalizeSessions(bulk *elastic.BulkService) {
+	oldSessionSet := lastSessionSet
+	lastSessionSet = currSessionSet
+	currSessionSet = make(map[string]*Session, 6000)
+
+	for k, oldS := range oldSessionSet {
+		_, ok := lastSessionSet[k]
+		if !ok {
+			dur := oldS.EndTime.Sub(oldS.StartTime)
+			fmt.Printf("Session %s ended after %s\n", k, dur)
+			oldS.Duration = dur
+			oldS.AverageViewers = oldS.viewersAvgTotal / oldS.viewersAvgTotal
+
+			item := elastic.NewBulkIndexRequest().
+				Index("room_session").
+				Type("_doc").
+				Doc(oldS)
+			bulk.Add(item)
+
+			if bulk.EstimatedSizeInBytes() > 80*1e6 {
+				_, err := bulk.Do(context.TODO())
+				if err != nil {
+					fmt.Printf("%s\n", err)
+				}
+			}
+		}
+	}
+}
+
+func setMax(target *int64, value int64) {
+	if value > *target {
+		*target = value
+	}
+}
+
+func setMin(target *int64, value int64) {
+	if value < *target {
+		*target = value
+	}
+}
+
 func watchOnlineRooms(affId string, client *elastic.Client, ctx context.Context) {
 	for {
 		bulk := client.Bulk()
@@ -33,7 +118,8 @@ func watchOnlineRooms(affId string, client *elastic.Client, ctx context.Context)
 		onlineRoomCount = len(onlineModels)
 		fmt.Printf("%d currently online rooms being indexed\n", onlineRoomCount)
 
-		for rank, value := range onlineModels {
+		for i := 0; i < onlineRoomCount; i++ {
+			value := &onlineModels[i]
 			switch value.CurrentShow {
 			case "private":
 				// NumUsers is stuck at last count when private started
@@ -51,6 +137,7 @@ func watchOnlineRooms(affId string, client *elastic.Client, ctx context.Context)
 				fmt.Printf("Unknown CurrentShow %s on model %s.\n", value.CurrentShow, value.Username)
 			}
 
+			rank := int64(i + 1)
 			var gRank int64
 			switch value.Gender {
 			case "f":
@@ -68,6 +155,8 @@ func watchOnlineRooms(affId string, client *elastic.Client, ctx context.Context)
 			default:
 				gRank = -1
 			}
+
+			updateSession(value, rank, t)
 
 			if value.Username == alertRoom {
 				if value.CurrentShow == "public" {
@@ -110,9 +199,9 @@ func watchOnlineRooms(affId string, client *elastic.Client, ctx context.Context)
 				Index("rooms").
 				Type("_doc").
 				Doc(elasticOM{
-					Model:      value,
+					Model:      *value,
 					Time:       t,
-					Rank:       int64(rank + 1),
+					Rank:       rank,
 					GenderRank: gRank,
 				})
 			bulk.Add(item)
@@ -132,6 +221,8 @@ func watchOnlineRooms(affId string, client *elastic.Client, ctx context.Context)
 			}
 			puddinPublic = false
 		}
+
+		finalizeSessions(bulk)
 
 	sleep:
 		if bulk.NumberOfActions() > 0 {
