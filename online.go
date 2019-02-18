@@ -65,7 +65,7 @@ func finalizeSessions(bulk *elastic.BulkService) {
 	for k, oldS := range oldSessionSet {
 		_, ok := lastSessionSet[k]
 		if !ok {
-			dur := oldS.EndTime.Sub(oldS.StartTime)
+			dur := oldS.EndTime.Sub(oldS.StartTime).Round(time.Minute)
 			fmt.Printf("Session %s ended after %s\n", k, dur)
 			oldS.DurationNs = dur
 			oldS.DurationStr = dur.String()
