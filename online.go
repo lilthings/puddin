@@ -68,7 +68,7 @@ func finalizeSessions(bulk *elastic.BulkService) {
 			dur := oldS.EndTime.Sub(oldS.StartTime)
 			fmt.Printf("Session %s ended after %s\n", k, dur)
 			oldS.Duration = dur
-			oldS.AverageViewers = oldS.viewersAvgTotal / oldS.viewersAvgTotal
+			oldS.AverageViewers = oldS.viewersAvgTotal / oldS.viewersAvgCount
 
 			item := elastic.NewBulkIndexRequest().
 				Index("room_session").
