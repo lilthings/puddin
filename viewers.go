@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/olivere/elastic"
+	"gopkg.in/olivere/elastic.v6"
 	"sync"
 	"time"
 )

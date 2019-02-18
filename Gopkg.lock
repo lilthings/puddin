@@ -31,10 +31,9 @@
   revision = "60711f1a8329503b04e1c88535f419d0bb440bff"
 
 [[projects]]
-  digest = "1:115948b36ea412cfbc289f7b911ea0b0f536917cbd499d9df6a3d3ab58e6edc0"
+  digest = "1:a90ec77534623646c77de67eb8b30b8dccc74a9e5fc8551eba8f3d71ce989d6f"
   name = "github.com/olivere/elastic"
   packages = [
-    ".",
     "config",
     "uritemplates",
   ]
@@ -63,12 +62,21 @@
   pruneopts = "UT"
   revision = "e657309f52e71501f9934566ac06dc5c2f7f11a1"
 
+[[projects]]
+  digest = "1:8ba4fd53e3fc457baa11583d02e1990a389ff85f7b5061c70c6f95bc382e565c"
+  name = "gopkg.in/olivere/elastic.v6"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "407a1d940dcc89e279c579eb393d0bdde8fd9ac4"
+  version = "v6.2.16"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
     "github.com/bwmarrin/discordgo",
-    "github.com/olivere/elastic",
+    "github.com/gorilla/websocket",
+    "gopkg.in/olivere/elastic.v6",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

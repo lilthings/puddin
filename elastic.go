@@ -4,7 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
-	"github.com/olivere/elastic"
+	"gopkg.in/olivere/elastic.v6"
 	"io/ioutil"
 	"net/http"
 	"os"

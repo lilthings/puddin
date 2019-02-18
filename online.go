@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/bwmarrin/discordgo"
-	"github.com/olivere/elastic"
+	"gopkg.in/olivere/elastic.v6"
 	"io/ioutil"
 	"net/http"
 	"time"
