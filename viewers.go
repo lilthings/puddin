@@ -84,6 +84,8 @@ func logViewers(affId string, client *elastic.Client, ctx context.Context) {
 			onlineViewer = false
 			_, _ = discord.ChannelMessageSend(viewerNotificationChannelId, viewerName+" is now offine")
 		}
+		// clear for next pass
+		foundViewer = false
 
 	sleep:
 		if bulk.NumberOfActions() > 0 {
