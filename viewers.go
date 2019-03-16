@@ -8,6 +8,9 @@ import (
 	"time"
 )
 
+var foundViewer = false
+var onlineViewer = false
+
 func logViewers(affId string, client *elastic.Client, ctx context.Context) {
 	for {
 		bulk := client.Bulk()
@@ -26,6 +29,14 @@ func logViewers(affId string, client *elastic.Client, ctx context.Context) {
 
 		go func() {
 			for viewer := range viewerChan {
+				if viewer.Username == viewerName {
+					if foundViewer == false {
+						_, _ = discord.ChannelMessageSend(viewerNotificationChannelId, viewerName+" is now online")
+					}
+					foundViewer = true
+					onlineViewer = true
+				}
+
 				viewer.BatchTime = t
 				bulk.Add(elastic.NewBulkIndexRequest().
 					Index("viewers").
@@ -68,6 +79,12 @@ func logViewers(affId string, client *elastic.Client, ctx context.Context) {
 		close(roomChan)
 		wg.Wait()
 		close(viewerChan)
+
+		if !foundViewer && onlineViewer {
+			onlineViewer = false
+			_, _ = discord.ChannelMessageSend(viewerNotificationChannelId, viewerName+" is now offine")
+		}
+
 	sleep:
 		if bulk.NumberOfActions() > 0 {
 			_, err := bulk.Do(ctx)

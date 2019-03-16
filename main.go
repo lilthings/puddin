@@ -15,12 +15,16 @@ var puddinPublic = false
 var affId string
 var alertRoom string
 var notificationChannelId string
+var viewerName string
+var viewerNotificationChannelId string
 var discordBotToken string
 
 func main() {
 	affId = os.Getenv("PUDDIN_AFF_ID")
 	alertRoom = os.Getenv("PUDDIN_ALERT_ROOM")
 	notificationChannelId = os.Getenv("PUDDIN_NOTIFICATION_CHANNEL_ID")
+	viewerName = os.Getenv("PUDDIN_VIEWER_NAME")
+	viewerNotificationChannelId = os.Getenv("PUDDIN_VIEWER_NOTIFICATION_CHANNEL_ID")
 	discordBotToken = os.Getenv("PUDDIN_DISCORD_BOT_TOKEN")
 
 	ctx, cancel := context.WithCancel(context.Background())
