@@ -30,7 +30,7 @@ func logViewers(affId string, client *elastic.Client, ctx context.Context) {
 		go func() {
 			for viewer := range viewerChan {
 				if viewer.Username == viewerName {
-					if foundViewer == false {
+					if onlineViewer == false {
 						_, _ = discord.ChannelMessageSend(viewerNotificationChannelId, viewerName+" is now online")
 					}
 					foundViewer = true
