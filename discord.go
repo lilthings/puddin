@@ -58,7 +58,7 @@ func errCheck(msg string, err error) {
 	}
 }
 
-var modelNameRegex = regexp.MustCompile("[a-zA-Z0-9_]+")
+var userNameRegex = regexp.MustCompile("[a-zA-Z0-9_]+")
 
 func commandHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	user := m.Author
@@ -94,5 +94,9 @@ func commandHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	if split[0] == commandPrefix+"status" {
 		statusCmd(s, m, split[1:])
+	}
+
+	if split[0] == commandPrefix+"viewing" {
+		viewingCmd(s, m, split[1:])
 	}
 }

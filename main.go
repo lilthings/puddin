@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"gopkg.in/olivere/elastic.v6"
 	"os"
 	"os/signal"
 	"syscall"
@@ -18,6 +19,7 @@ var notificationChannelId string
 var viewerName string
 var viewerNotificationChannelId string
 var discordBotToken string
+var esClient *elastic.Client
 
 func main() {
 	affId = os.Getenv("PUDDIN_AFF_ID")
@@ -29,16 +31,16 @@ func main() {
 
 	ctx, cancel := context.WithCancel(context.Background())
 
-	client := getElasticClient()
+	esClient = getElasticClient()
 
-	createOnlineRoomIndex(client)
-	createViewerIndex(client)
+	createOnlineRoomIndex(esClient)
+	createViewerIndex(esClient)
 
 	startDiscord()
 	defer closeDiscord()
 
-	go watchOnlineRooms(affId, client, ctx)
-	go logViewers(affId, client, ctx)
+	go watchOnlineRooms(affId, esClient, ctx)
+	go logViewers(affId, esClient, ctx)
 
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGTERM, syscall.SIGINT)

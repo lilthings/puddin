@@ -3,7 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/bwmarrin/discordgo"
 	"gopkg.in/olivere/elastic.v6"
+	"strings"
 	"sync"
 	"time"
 )
@@ -99,5 +101,76 @@ func logViewers(affId string, client *elastic.Client, ctx context.Context) {
 		fmt.Printf("%d rooms are region blocked\n", regionBlocked)
 		fmt.Printf("Sleeping %s until next viewer check\n", u)
 		time.Sleep(u)
+	}
+}
+
+func viewingCmd(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
+	if len(args) != 1 {
+		s := fmt.Sprintf("incorrect num args (%d): %s\n", len(args), strings.Join(args, " "))
+		_, _ = discord.ChannelMessageSend(m.ChannelID, s)
+		return
+	}
+
+	if userNameRegex.MatchString(args[0]) {
+		viewer := strings.ToLower(args[0])
+
+		usrFilter := elastic.NewTermQuery("username", viewer)
+		recentFilter := elastic.NewRangeQuery("batch_time").Gte("now-20m").Lte("now")
+		query := elastic.NewBoolQuery().Filter(usrFilter, recentFilter)
+
+		dateHisto := elastic.NewDateHistogramAggregation().
+			Interval("10m").
+			Order("_key", false).
+			Field("batch_time").
+			MinDocCount(1)
+
+		roomAgg := elastic.NewTermsAggregation().
+			Field("room")
+
+		dateHisto = dateHisto.SubAggregation("room", roomAgg)
+
+		search := esClient.Search("viewers").
+			Query(query).
+			Aggregation("batch_time", dateHisto)
+
+		res, err := search.Do(context.Background())
+		if err != nil {
+			_, _ = discord.ChannelMessageSend(m.ChannelID, "Error getting viewed rooms")
+			return
+		}
+
+		dhi, ok := res.Aggregations.DateHistogram("batch_time")
+		if !ok {
+			_, _ = discord.ChannelMessageSend(m.ChannelID, "Error getting viewed rooms")
+			return
+		}
+
+		var viewing []string
+		if len(dhi.Buckets) > 0 {
+			bucket := dhi.Buckets[0]
+			ti, ok := bucket.Terms("room")
+			if !ok {
+				_, _ = discord.ChannelMessageSend(m.ChannelID, "Error getting viewed rooms")
+				return
+			}
+			for _, value := range ti.Buckets {
+				room, ok := value.Key.(string)
+				if !ok {
+					_, _ = discord.ChannelMessageSend(m.ChannelID, "Error getting viewed rooms")
+					return
+				}
+				viewing = append(viewing, room)
+			}
+		}
+
+		s := fmt.Sprintf("%s was recently seen viewing %d rooms\n----\n%s",
+			viewer,
+			len(viewing),
+			strings.Join(viewing, "\n"),
+		)
+
+		_, _ = discord.ChannelMessageSend(m.ChannelID, s)
+
+		return
 	}
 }

@@ -16,7 +16,7 @@ func statusCmd(s *discordgo.Session, m *discordgo.MessageCreate, args []string) 
 		return
 	}
 
-	if modelNameRegex.MatchString(args[0]) {
+	if userNameRegex.MatchString(args[0]) {
 		room := strings.ToLower(args[0])
 		apiUrl := fmt.Sprintf("https://chaturbate.com/api/chatvideocontext/%s/", room)
 		res, err := http.Get(apiUrl)
