@@ -223,3 +223,32 @@ func alertViewerCmd(s *discordgo.Session, m *discordgo.MessageCreate, args []str
 		return
 	}
 }
+
+func stopViewerCmd(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
+	if len(args) != 1 {
+		s := fmt.Sprintf("incorrect num args (%d): %s\n", len(args), strings.Join(args, " "))
+		_, _ = discord.ChannelMessageSend(m.ChannelID, s)
+		return
+	}
+
+	if userNameRegex.MatchString(args[0]) {
+		name := strings.ToLower(args[0])
+
+		delete(foundViewer, name)
+		delete(onlineViewer, name)
+		_, _ = discord.ChannelMessageSend(m.ChannelID, name+" is no longer being watched")
+
+		var watching []string
+		for user := range onlineViewer {
+			watching = append(watching, user)
+		}
+		watching = append(watching, "")
+
+		err := ioutil.WriteFile(watchlist, []byte(strings.Join(watching, "\n")), 0777)
+		if err != nil {
+			_, _ = discord.ChannelMessageSend(m.ChannelID, "error saving watchlist")
+		}
+
+		return
+	}
+}
