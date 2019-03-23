@@ -252,3 +252,14 @@ func stopViewerCmd(s *discordgo.Session, m *discordgo.MessageCreate, args []stri
 		return
 	}
 }
+
+func trackingCmd(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
+	var watching []string
+	for user := range onlineViewer {
+		watching = append(watching, user)
+	}
+	watching = append(watching, "")
+
+	str := "currently watching\n```\n" + strings.Join(watching, "\n") + "```"
+	_, _ = discord.ChannelMessageSend(m.ChannelID, str)
+}
