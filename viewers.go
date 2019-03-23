@@ -5,13 +5,29 @@ import (
 	"fmt"
 	"github.com/bwmarrin/discordgo"
 	"gopkg.in/olivere/elastic.v6"
+	"io/ioutil"
 	"strings"
 	"sync"
 	"time"
 )
 
-var foundViewer = false
-var onlineViewer = false
+var foundViewer = make(map[string]bool)
+var onlineViewer = make(map[string]bool)
+
+const watchlist = "viewerWatchlist.txt"
+
+func init() {
+	b, err := ioutil.ReadFile(watchlist)
+	if err != nil {
+		panic(err)
+	}
+	username := strings.Split(string(b), "\n")
+	for _, value := range username {
+		name := strings.TrimSpace(value)
+		foundViewer[name] = false
+		onlineViewer[name] = false
+	}
+}
 
 func logViewers(affId string, client *elastic.Client, ctx context.Context) {
 	for {
@@ -31,12 +47,12 @@ func logViewers(affId string, client *elastic.Client, ctx context.Context) {
 
 		go func() {
 			for viewer := range viewerChan {
-				if viewer.Username == viewerName {
-					if onlineViewer == false {
-						_, _ = discord.ChannelMessageSend(viewerNotificationChannelId, viewerName+" is now online")
+				if o, ok := onlineViewer[viewer.Username]; ok {
+					if !o {
+						_, _ = discord.ChannelMessageSend(viewerNotificationChannelId, viewer.Username+" is now online")
 					}
-					foundViewer = true
-					onlineViewer = true
+					foundViewer[viewer.Username] = true
+					onlineViewer[viewer.Username] = true
 				}
 
 				viewer.BatchTime = t
@@ -82,13 +98,14 @@ func logViewers(affId string, client *elastic.Client, ctx context.Context) {
 		wg.Wait()
 		close(viewerChan)
 
-		if !foundViewer && onlineViewer {
-			onlineViewer = false
-			_, _ = discord.ChannelMessageSend(viewerNotificationChannelId, viewerName+" is now offine")
+		for name, online := range onlineViewer {
+			if online && !foundViewer[name] {
+				onlineViewer[name] = false
+				_, _ = discord.ChannelMessageSend(viewerNotificationChannelId, name+" is now offine")
+			}
+			// clear for next pass
+			foundViewer[name] = false
 		}
-		// clear for next pass
-		foundViewer = false
-
 	sleep:
 		if bulk.NumberOfActions() > 0 {
 			_, err := bulk.Do(ctx)
@@ -170,6 +187,34 @@ func viewingCmd(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 		)
 
 		_, _ = discord.ChannelMessageSend(m.ChannelID, s)
+
+		return
+	}
+}
+
+func alertViewerCmd(s *discordgo.Session, m *discordgo.MessageCreate, args []string) {
+	if len(args) != 1 {
+		s := fmt.Sprintf("incorrect num args (%d): %s\n", len(args), strings.Join(args, " "))
+		_, _ = discord.ChannelMessageSend(m.ChannelID, s)
+		return
+	}
+
+	if userNameRegex.MatchString(args[0]) {
+		name := strings.ToLower(args[0])
+
+		foundViewer[name] = false
+		onlineViewer[name] = false
+		_, _ = discord.ChannelMessageSend(m.ChannelID, name+" is now being watched")
+
+		var watching []string
+		for user := range onlineViewer {
+			watching = append(watching, user)
+		}
+
+		err := ioutil.WriteFile(watchlist, []byte(strings.Join(watching, "\n")), 0777)
+		if err != nil {
+			_, _ = discord.ChannelMessageSend(m.ChannelID, "error saving watchlist")
+		}
 
 		return
 	}

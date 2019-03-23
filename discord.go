@@ -99,4 +99,7 @@ func commandHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if split[0] == commandPrefix+"viewing" {
 		viewingCmd(s, m, split[1:])
 	}
+	if split[0] == commandPrefix+"alertViewer" {
+		alertViewerCmd(s, m, split[1:])
+	}
 }
