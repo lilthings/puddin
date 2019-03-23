@@ -186,7 +186,7 @@ func viewingCmd(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 		s := fmt.Sprintf("%s was recently seen viewing %d rooms\n----\n%s",
 			viewer,
 			len(viewing),
-			strings.Join(viewing, "\n"),
+			"```\n"+strings.Join(viewing, "\n")+"\n```",
 		)
 
 		_, _ = discord.ChannelMessageSend(m.ChannelID, s)
