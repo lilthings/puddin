@@ -24,6 +24,9 @@ func init() {
 	username := strings.Split(string(b), "\n")
 	for _, value := range username {
 		name := strings.TrimSpace(value)
+		if name == "" {
+			continue
+		}
 		foundViewer[name] = false
 		onlineViewer[name] = false
 	}
@@ -210,6 +213,7 @@ func alertViewerCmd(s *discordgo.Session, m *discordgo.MessageCreate, args []str
 		for user := range onlineViewer {
 			watching = append(watching, user)
 		}
+		watching = append(watching, "")
 
 		err := ioutil.WriteFile(watchlist, []byte(strings.Join(watching, "\n")), 0777)
 		if err != nil {
