@@ -73,7 +73,7 @@ func finalizeSessions(bulk *elastic.BulkService) {
 			oldS.DeltaFollowers = oldS.EndFollowers - oldS.StartFollowers
 
 			item := elastic.NewBulkIndexRequest().
-				Index("room_session").
+				Index(sessionIndexName).
 				Type("_doc").
 				Doc(oldS)
 			bulk.Add(item)
@@ -198,7 +198,7 @@ func watchOnlineRooms(affId string, client *elastic.Client, ctx context.Context)
 			}
 
 			item := elastic.NewBulkIndexRequest().
-				Index("rooms").
+				Index(roomIndexName).
 				Type("_doc").
 				Doc(elasticOM{
 					Model:      *value,

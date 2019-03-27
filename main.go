@@ -33,6 +33,7 @@ func main() {
 
 	createOnlineRoomIndex(esClient)
 	createViewerIndex(esClient)
+	createSessionIndex(esClient)
 
 	startDiscord()
 	defer closeDiscord()

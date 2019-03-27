@@ -72,9 +72,10 @@ func getHttpClient() (*http.Client, error) {
 	return httpClient, nil
 }
 
-const mapping = `{
+const roomMapping = `{
   "settings": {
-    "number_of_shards": 2
+    "number_of_shards": 8,
+    "number_of_replicas": 0
   },
   "mappings": {
     "_doc": {
@@ -173,7 +174,8 @@ const mapping = `{
 
 const viewerMapping = `{
   "settings": {
-    "number_of_shards": 2
+    "number_of_shards": 8,
+    "number_of_replicas": 0
   },
   "mappings": {
     "_doc": {
@@ -210,16 +212,99 @@ const viewerMapping = `{
   }
 }`
 
+const sessionMapping = `{
+  "settings": {
+    "number_of_shards": 8,
+    "number_of_replicas": 0
+  },
+  "mappings": {
+    "_doc": {
+      "properties" : {
+        "average_viewers" : {
+          "type" : "long"
+        },
+        "birthday" : {
+          "type" : "date"
+        },
+        "delta_followers" : {
+          "type" : "long"
+        },
+        "duration" : {
+          "type" : "long"
+        },
+        "duration_ns" : {
+          "type" : "long"
+        },
+        "duration_str" : {
+          "type" : "keyword",
+          "ignore_above" : 256
+        },
+        "end_followers" : {
+          "type" : "long"
+        },
+        "end_rank" : {
+          "type" : "long"
+        },
+        "end_time" : {
+          "type" : "date"
+        },
+        "gender" : {
+          "type" : "keyword",
+          "ignore_above" : 256
+        },
+        "location" : {
+          "type" : "keyword",
+          "ignore_above" : 256
+        },
+        "max_followers" : {
+          "type" : "long"
+        },
+        "max_rank" : {
+          "type" : "long"
+        },
+        "max_viewers" : {
+          "type" : "long"
+        },
+        "min_followers" : {
+          "type" : "long"
+        },
+        "min_rank" : {
+          "type" : "long"
+        },
+        "show_type" : {
+          "type" : "keyword",
+          "ignore_above" : 256
+        },
+        "start_followers" : {
+          "type" : "long"
+        },
+        "start_rank" : {
+          "type" : "long"
+        },
+        "start_time" : {
+          "type" : "date"
+        },
+        "username" : {
+          "type" : "keyword",
+          "ignore_above" : 256
+        }
+      }
+    }
+  }
+}`
+
+const roomIndexName = "room"
+
 func createOnlineRoomIndex(client *elastic.Client) {
 	// Use the IndexExists service to check if a specified index exists.
-	exists, err := client.IndexExists("rooms").Do(context.Background())
+	exists, err := client.IndexExists(roomIndexName).Do(context.Background())
 	if err != nil {
 		// Handle error
 		panic(err)
 	}
 	if !exists {
 		// Create a new index.
-		createIndex, err := client.CreateIndex("rooms").BodyString(mapping).Do(context.Background())
+		createIndex, err := client.CreateIndex(roomIndexName).BodyString(roomMapping).Do(context.Background())
 		if err != nil {
 			// Handle error
 			panic(err)
@@ -229,16 +314,41 @@ func createOnlineRoomIndex(client *elastic.Client) {
 		}
 	}
 }
+
+const viewerIndexName = "viewer"
+
 func createViewerIndex(client *elastic.Client) {
 	// Use the IndexExists service to check if a specified index exists.
-	exists, err := client.IndexExists("viewers").Do(context.Background())
+	exists, err := client.IndexExists(viewerIndexName).Do(context.Background())
 	if err != nil {
 		// Handle error
 		panic(err)
 	}
 	if !exists {
 		// Create a new index.
-		createIndex, err := client.CreateIndex("viewers").BodyString(viewerMapping).Do(context.Background())
+		createIndex, err := client.CreateIndex(viewerIndexName).BodyString(viewerMapping).Do(context.Background())
+		if err != nil {
+			// Handle error
+			panic(err)
+		}
+		if !createIndex.Acknowledged {
+			// Not acknowledged
+		}
+	}
+}
+
+const sessionIndexName = "session"
+
+func createSessionIndex(client *elastic.Client) {
+	// Use the IndexExists service to check if a specified index exists.
+	exists, err := client.IndexExists(sessionIndexName).Do(context.Background())
+	if err != nil {
+		// Handle error
+		panic(err)
+	}
+	if !exists {
+		// Create a new index.
+		createIndex, err := client.CreateIndex(sessionIndexName).BodyString(sessionMapping).Do(context.Background())
 		if err != nil {
 			// Handle error
 			panic(err)
