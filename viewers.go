@@ -2,8 +2,13 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
+	"net/http"
+	"os"
+	"path"
 	"strings"
 	"sync"
 	"time"
@@ -86,6 +91,10 @@ func logViewers(affId string, client *elastic.Client, ctx context.Context) {
 						} else {
 							regionBlocked++
 						}
+					}
+					err = downloadRoomThumb("./thumbs", username)
+					if err != nil {
+						fmt.Printf("error fetching thumb for %s: %s\n", username, err)
 					}
 					for _, value := range reg {
 						viewerChan <- value
@@ -263,4 +272,45 @@ func trackingCmd(s *discordgo.Session, m *discordgo.MessageCreate, args []string
 
 	str := "currently watching\n```\n" + strings.Join(watching, "\n") + "```"
 	_, _ = discord.ChannelMessageSend(m.ChannelID, str)
+}
+
+func downloadRoomThumb(basePath string, roomName string) error {
+	if len(roomName) < 1 {
+		return errors.New("invalid room name")
+	}
+	t := time.Now().Unix()
+	fileUrl := fmt.Sprintf("https://roomimg.stream.highwebmedia.com/ri/%s.jpg?%d", roomName, t)
+	fileDir := path.Join(basePath, roomName[0:1], roomName)
+	err := os.MkdirAll(fileDir, 0666)
+	if err != nil {
+		return err
+	}
+	filePath := path.Join(fileDir, fmt.Sprintf("%s_%d.jpg", roomName, t))
+	if err := DownloadFile(filePath, fileUrl); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// DownloadFile will download a url to a local file. It's efficient because it will
+// write as it downloads and not load the whole file into memory.
+func DownloadFile(filepath string, url string) error {
+	// Get the data
+	resp, err := http.Get(url)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	// Create the file
+	out, err := os.Create(filepath)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	// Write the body to file
+	_, err = io.Copy(out, resp.Body)
+	return err
 }
