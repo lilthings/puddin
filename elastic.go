@@ -75,7 +75,7 @@ func getHttpClient() (*http.Client, error) {
 
 const roomMapping = `{
   "settings": {
-    "number_of_shards": 8,
+    "number_of_shards": 12,
     "number_of_replicas": 0
   },
   "mappings": {
@@ -175,7 +175,7 @@ const roomMapping = `{
 
 const viewerMapping = `{
   "settings": {
-    "number_of_shards": 8,
+    "number_of_shards": 12,
     "number_of_replicas": 0
   },
   "mappings": {
@@ -215,7 +215,7 @@ const viewerMapping = `{
 
 const sessionMapping = `{
   "settings": {
-    "number_of_shards": 8,
+    "number_of_shards": 12,
     "number_of_replicas": 0
   },
   "mappings": {
