@@ -3,12 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/bwmarrin/discordgo"
-	"gopkg.in/olivere/elastic.v6"
 	"io/ioutil"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/bwmarrin/discordgo"
+	"gopkg.in/olivere/elastic.v6"
 )
 
 var foundViewer = make(map[string]bool)
@@ -149,7 +150,7 @@ func viewingCmd(s *discordgo.Session, m *discordgo.MessageCreate, args []string)
 
 		dateHisto = dateHisto.SubAggregation("room", roomAgg)
 
-		search := esClient.Search("viewers").
+		search := esClient.Search(viewerIndexName).
 			Query(query).
 			Aggregation("batch_time", dateHisto)
 

@@ -4,11 +4,12 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
-	"gopkg.in/olivere/elastic.v6"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"time"
+
+	"gopkg.in/olivere/elastic.v6"
 )
 
 func getElasticClient() *elastic.Client {

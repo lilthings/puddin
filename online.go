@@ -4,11 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/bwmarrin/discordgo"
-	"gopkg.in/olivere/elastic.v6"
 	"io/ioutil"
 	"net/http"
 	"time"
+
+	"github.com/bwmarrin/discordgo"
+	"gopkg.in/olivere/elastic.v6"
 )
 
 var onlineRoomCount int

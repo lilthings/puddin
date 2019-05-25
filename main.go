@@ -2,10 +2,11 @@ package main
 
 import (
 	"context"
-	"gopkg.in/olivere/elastic.v6"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"gopkg.in/olivere/elastic.v6"
 )
 
 type OnlineModels []OnlineModel

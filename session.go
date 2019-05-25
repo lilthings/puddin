@@ -2,6 +2,8 @@ package main
 
 import "time"
 
+// ToDo: on shutdown dump all current sessions rather than lose them
+
 type Session struct {
 	Username string `json:"username,omitempty"`
 	ShowType string `json:"show_type,omitempty"`
