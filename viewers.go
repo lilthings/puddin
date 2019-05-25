@@ -45,7 +45,7 @@ func logViewers(affId string, client *elastic.Client, ctx context.Context) {
 		regionBlocked := 0
 
 		viewerChan := make(chan roomViewer)
-		roomChan := make(chan string)
+		roomChan := make(chan *OnlineModel)
 		wg := sync.WaitGroup{}
 
 		onlineModels, err := getOnlineRooms(affId)
@@ -79,22 +79,22 @@ func logViewers(affId string, client *elastic.Client, ctx context.Context) {
 			}
 		}()
 
-		for worker := 0; worker < 5; worker++ {
+		for worker := 0; worker < 10; worker++ {
 			wg.Add(1)
 			go func() {
 				defer wg.Done()
-				for username := range roomChan {
-					reg, _, err := getViewers(username)
+				for room := range roomChan {
+					reg, _, err := getViewers(room.Username)
 					if err != nil {
 						if err != errRegionBlocked {
-							fmt.Println(username, err)
+							fmt.Println(room.Username, err)
 						} else {
 							regionBlocked++
 						}
 					}
-					err = downloadRoomThumb("./thumbs", username)
+					err = downloadRoomThumb("./thumbs", room.Gender, room.Username)
 					if err != nil {
-						fmt.Printf("error fetching thumb for %s: %s\n", username, err)
+						fmt.Printf("error fetching thumb for %s: %s\n", room.Username, err)
 					}
 					for _, value := range reg {
 						viewerChan <- value
@@ -104,7 +104,7 @@ func logViewers(affId string, client *elastic.Client, ctx context.Context) {
 		}
 
 		for _, value := range onlineModels {
-			roomChan <- value.Username
+			roomChan <- &value
 		}
 
 		close(roomChan)
@@ -274,13 +274,13 @@ func trackingCmd(s *discordgo.Session, m *discordgo.MessageCreate, args []string
 	_, _ = discord.ChannelMessageSend(m.ChannelID, str)
 }
 
-func downloadRoomThumb(basePath string, roomName string) error {
+func downloadRoomThumb(basePath string, gender string, roomName string) error {
 	if len(roomName) < 1 {
 		return errors.New("invalid room name")
 	}
 	t := time.Now().Unix()
 	fileUrl := fmt.Sprintf("https://roomimg.stream.highwebmedia.com/ri/%s.jpg?%d", roomName, t)
-	fileDir := path.Join(basePath, roomName[0:1], roomName)
+	fileDir := path.Join(basePath, gender, roomName[0:1], roomName)
 	err := os.MkdirAll(fileDir, 0666)
 	if err != nil {
 		return err
