@@ -362,9 +362,12 @@ func createSessionIndex(client *elastic.Client) {
 
 type elasticOM struct {
 	Time       time.Time   `json:"time"`
+	HourOfDay  int         `json:"hod_utc"`
+	DayOfWeek  int         `json:"dow_utc"`
 	Rank       int64       `json:"rank"`
 	GenderRank int64       `json:"gender_rank"`
 	Model      OnlineModel `json:"model"`
+	PvtPrice   *PrivateCVC `json:"pvt_price,omitempty"`
 }
 
 type roomViewer struct {

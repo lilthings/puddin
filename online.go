@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
@@ -17,9 +18,14 @@ var onlineRoomCount int
 var lastSessionSet = make(map[string]*Session, 6000)
 var currSessionSet = make(map[string]*Session, 6000)
 
+var pvtPriceCache = make(map[string]*PrivateCVC, 6000)
+var pvpc = sync.Mutex{}
+
 func updateSession(room *OnlineModel, rank int64, t time.Time) {
 	s, ok := lastSessionSet[room.Username+`\/`+room.CurrentShow]
 	if !ok {
+		pvp, _ := pvtPriceCache[room.Username]
+
 		s = &Session{
 			Username:        room.Username,
 			ShowType:        room.CurrentShow,
@@ -37,6 +43,7 @@ func updateSession(room *OnlineModel, rank int64, t time.Time) {
 			EndRank:         rank,
 			MinRank:         rank,
 			MaxRank:         rank,
+			PvtPrice:        pvp,
 			viewersAvgTotal: room.NumUsers,
 			viewersAvgCount: 1,
 		}
@@ -73,6 +80,10 @@ func finalizeSessions(bulk *elastic.BulkService) {
 			oldS.AverageViewers = oldS.viewersAvgTotal / oldS.viewersAvgCount
 			oldS.DeltaFollowers = oldS.EndFollowers - oldS.StartFollowers
 
+			pvpc.Lock()
+			delete(pvtPriceCache, oldS.Username)
+			pvpc.Unlock()
+
 			item := elastic.NewBulkIndexRequest().
 				Index(sessionIndexName).
 				Type("_doc").
@@ -105,7 +116,7 @@ func watchOnlineRooms(affId string, client *elastic.Client, ctx context.Context)
 	for {
 		bulk := client.Bulk()
 		foundPuddin := false
-		t := time.Now()
+		t := time.Now().UTC()
 
 		var fRank int64 = 0
 		var mRank int64 = 0
@@ -198,14 +209,19 @@ func watchOnlineRooms(affId string, client *elastic.Client, ctx context.Context)
 				}
 			}
 
+			pvp, _ := pvtPriceCache[value.Username]
+
 			item := elastic.NewBulkIndexRequest().
 				Index(roomIndexName).
 				Type("_doc").
 				Doc(elasticOM{
 					Model:      *value,
 					Time:       t,
+					HourOfDay:  t.Hour(),
+					DayOfWeek:  int(t.Weekday()),
 					Rank:       rank,
 					GenderRank: gRank,
+					PvtPrice:   pvp,
 				})
 			bulk.Add(item)
 

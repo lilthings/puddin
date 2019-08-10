@@ -30,6 +30,8 @@ type Session struct {
 	MinRank   int64 `json:"min_rank,omitempty"`
 	MaxRank   int64 `json:"max_rank,omitempty"`
 
+	PvtPrice *PrivateCVC `json:"pvt_price,omitempty"`
+
 	viewersAvgTotal int64
 	viewersAvgCount int64
 }

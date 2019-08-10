@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -48,7 +49,7 @@ func getViewers(room string) (reg []roomViewer, anon int64, err error) {
 	}
 
 	if res.StatusCode == 401 {
-		fmt.Println("401! " + room)
+		fmt.Println("401!a " + room)
 		return nil, 0, os.ErrPermission
 	}
 	if res.StatusCode == 400 {
@@ -105,4 +106,42 @@ type ChatVideoContext struct {
 	ChatPassword        string `json:"chat_password"`
 	RoomPass            string `json:"room_pass"`
 	WsChatHost          string `json:"wschat_host"`
+}
+
+type PrivateCVC struct {
+	PrivateShowPrice    int64 `json:"private_show_price"`
+	AllowPrivateShows   bool  `json:"allow_private_shows"`
+	SpyPrivateShowPrice int64 `json:"spy_private_show_price"`
+	GroupShowPrice      int64 `json:"group_show_price"`
+	AllowGroupShows     bool  `json:"allow_group_shows"`
+}
+
+func getPrivateCVC(room string) (*PrivateCVC, error) {
+	room = strings.ToLower(room)
+	apiUrl := fmt.Sprintf("https://chaturbate.com/api/chatvideocontext/%s/", room)
+	res, err := http.Get(apiUrl)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+	contents, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+	res.Body.Close()
+
+	if res.StatusCode == http.StatusUnauthorized {
+		// fmt.Println("401!b " + room)
+		return nil, errRegionBlocked
+	}
+
+	cvc := &PrivateCVC{}
+	err = json.Unmarshal(contents, cvc)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	return cvc, nil
 }
