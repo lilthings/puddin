@@ -94,8 +94,10 @@ func logViewers(affId string, client *elastic.Client, ctx context.Context) {
 					}
 
 					p, err := getPrivateCVC(room.Username)
-					if err != nil && err != errRegionBlocked && p != nil {
-						fmt.Printf("error fetching pvt price for %s: %s\n", room.Username, err)
+					if err != nil || p == nil {
+						if err != errRegionBlocked {
+							fmt.Printf("error fetching pvt price for %s: %s\n", room.Username, err)
+						}
 					} else {
 						pvpc.Lock()
 						pvtPriceCache[room.Username] = *p
