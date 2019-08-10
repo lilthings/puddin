@@ -24,7 +24,9 @@ var pvpc = sync.Mutex{}
 func updateSession(room *OnlineModel, rank int64, t time.Time) {
 	s, ok := lastSessionSet[room.Username+`\/`+room.CurrentShow]
 	if !ok {
+		pvpc.Lock()
 		pvp, _ := pvtPriceCache[room.Username]
+		pvpc.Unlock()
 
 		s = &Session{
 			Username:        room.Username,
@@ -209,7 +211,9 @@ func watchOnlineRooms(affId string, client *elastic.Client, ctx context.Context)
 				}
 			}
 
+			pvpc.Lock()
 			pvp, _ := pvtPriceCache[value.Username]
+			pvpc.Unlock()
 
 			item := elastic.NewBulkIndexRequest().
 				Index(roomIndexName).
