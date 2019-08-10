@@ -18,7 +18,7 @@ var onlineRoomCount int
 var lastSessionSet = make(map[string]*Session, 6000)
 var currSessionSet = make(map[string]*Session, 6000)
 
-var pvtPriceCache = make(map[string]*PrivateCVC, 6000)
+var pvtPriceCache = make(map[string]PrivateCVC, 6000)
 var pvpc = sync.Mutex{}
 
 func updateSession(room *OnlineModel, rank int64, t time.Time) {
@@ -45,7 +45,7 @@ func updateSession(room *OnlineModel, rank int64, t time.Time) {
 			EndRank:         rank,
 			MinRank:         rank,
 			MaxRank:         rank,
-			PvtPrice:        pvp,
+			PvtPrice:        &pvp,
 			viewersAvgTotal: room.NumUsers,
 			viewersAvgCount: 1,
 		}
@@ -225,7 +225,7 @@ func watchOnlineRooms(affId string, client *elastic.Client, ctx context.Context)
 					DayOfWeek:  int(t.Weekday()),
 					Rank:       rank,
 					GenderRank: gRank,
-					PvtPrice:   pvp,
+					PvtPrice:   &pvp,
 				})
 			bulk.Add(item)
 
