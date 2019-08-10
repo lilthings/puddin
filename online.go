@@ -24,8 +24,12 @@ var pvpc = sync.Mutex{}
 func updateSession(room *OnlineModel, rank int64, t time.Time) {
 	s, ok := lastSessionSet[room.Username+`\/`+room.CurrentShow]
 	if !ok {
+		var pp *PrivateCVC
 		pvpc.Lock()
-		pvp, _ := pvtPriceCache[room.Username]
+		pvp, ok := pvtPriceCache[room.Username]
+		if ok {
+			pp = &pvp
+		}
 		pvpc.Unlock()
 
 		s = &Session{
@@ -45,7 +49,7 @@ func updateSession(room *OnlineModel, rank int64, t time.Time) {
 			EndRank:         rank,
 			MinRank:         rank,
 			MaxRank:         rank,
-			PvtPrice:        &pvp,
+			PvtPrice:        pp,
 			viewersAvgTotal: room.NumUsers,
 			viewersAvgCount: 1,
 		}
@@ -211,8 +215,12 @@ func watchOnlineRooms(affId string, client *elastic.Client, ctx context.Context)
 				}
 			}
 
+			var pp *PrivateCVC
 			pvpc.Lock()
-			pvp, _ := pvtPriceCache[value.Username]
+			pvp, ok := pvtPriceCache[value.Username]
+			if ok {
+				pp = &pvp
+			}
 			pvpc.Unlock()
 
 			item := elastic.NewBulkIndexRequest().
@@ -225,7 +233,7 @@ func watchOnlineRooms(affId string, client *elastic.Client, ctx context.Context)
 					DayOfWeek:  int(t.Weekday()),
 					Rank:       rank,
 					GenderRank: gRank,
-					PvtPrice:   &pvp,
+					PvtPrice:   pp,
 				})
 			bulk.Add(item)
 
